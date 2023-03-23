@@ -21,7 +21,7 @@ data_type=vector
 train_type=hyper
 dataset_num=64
 # cheng2020-anchor cheng2020-attn cheng2020-quant he2022-elic ours patent -FinalCut-UNet -q$q
-MODEL_PATH=/mnt/group-ai-medical-cq/private/joylv/data/lora/${model}-$train_type-$data_type-compare/q$q-lambda${l}-$dataset_num/
+MODEL_PATH=/mnt/group-ai-medical-cq/private/joylv/data/svd/${model}-$train_type-$data_type-compare/q$q-lambda${l}-$dataset_num/
 # MODEL_PATH=/mnt/group-ai-medical-cq/private/joylv/data/train_frame_i_v2/
 file=${MODEL_PATH}checkpoint.pth.tar
 
@@ -35,7 +35,7 @@ fi
 
 # /mnt/group-ai-medical-cq/private/joylv/data/BRACS/train/
 
-CUDA_VISIBLE_DEVICES=5 python3 train_${train_type}.py \
+CUDA_VISIBLE_DEVICES=0 python3 train_${train_type}.py \
         --lambda ${l} \
         --quality ${q} \
         -m ${model} \

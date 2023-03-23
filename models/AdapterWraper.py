@@ -1,18 +1,22 @@
 import copy
-from torch.nn.parameter import Parameter
-import torch
 import math
+
+import torch
 import torch.nn as nn
 from compressai.layers import (AttentionBlock, ResidualBlock,
-                               ResidualBlockUpsample, ResidualBlockWithStride, 
+                               ResidualBlockUpsample, ResidualBlockWithStride,
                                conv3x3, subpel_conv3x3)
-
-from layers import ResidualBlockHyper, ResidualBlockLoRA, ResidualBlockLoRAUpsample, ResidualBlockAdapter
 from compressai.zoo import image_models
+from einops import rearrange
+from layers import (ResidualBlockAdapter, ResidualBlockHyper,
+                    ResidualBlockLoRA, ResidualBlockLoRAUpsample)
+from torch.nn.parameter import Parameter
 
-from .cdf_utils import LogisticCDF, SpikeAndSlabCDF, WeightEntropyModule, cal_modified_bpp_cost, compress_weight, decompress_weight
+from .cdf_utils import (LogisticCDF, SpikeAndSlabCDF, WeightEntropyModule,
+                        cal_modified_bpp_cost, compress_weight,
+                        decompress_weight)
+from .waseda import Cheng2020Attention
 
-from .waseda import  Cheng2020Attention
 
 @torch.no_grad()
 def init_adapter_layer(adapter_layer: nn.Module):
@@ -683,6 +687,90 @@ class WeightSplitLoRA(Cheng2020Attention):
             "likelihoods": {"y": y_likelihoods, "z": z_likelihoods},
         }
         
+class WeightSplitSVD(Cheng2020Attention):
+    def __init__(self, N=192):
+        super().__init__(N=N)
+        self.dim=2
+        self.N = N
+    
+        distrib = LogisticCDF(scale=0.05)
+        self.w_ent = WeightEntropyModule(distrib, 0.06, data_type='uint8').to('cuda')
+        
+    def compress(self, A):
+        weights = nn.ParameterList([A])
+        weights_q = []
+        likelihoods = []
+        for w in weights:
+            w_shape = w.reshape(1, 1, -1).shape
+            diff = w.reshape(w_shape)
+            diff_q, likelihood = self.w_ent(diff)
+            likelihoods.append(likelihood)
+            weights_q.append(diff_q.reshape(w.shape))
+            
+        extra_bit = sum(
+            (torch.log(likelihood).sum() / -math.log(2))
+            for likelihood in likelihoods
+        )
+        return extra_bit
+    
+    def quant(self, A):
+        weights = nn.ParameterList([A])
+        weights_q = []
+        likelihoods = []
+        for w in weights:
+            w_shape = w.reshape(1, 1, -1).shape
+            diff = w.reshape(w_shape)
+            diff_q, likelihood = self.w_ent(diff)
+            likelihoods.append(likelihood)
+            weights_q.append(diff_q.reshape(w.shape))
+            
+        extra_bit = sum(
+            (torch.log(likelihood).sum() / -math.log(2))
+            for likelihood in likelihoods
+        )
+        return weights_q[0]
+     
+    def forward1(self, y, z, sigma):
+        z_hat, z_likelihoods = self.entropy_bottleneck(z)
+    
+        params = self.h_s(z_hat)
+        y_hat = self.gaussian_conditional.quantize(y, "noise" if self.training else "dequantize")
+            
+        ctx_params = self.context_prediction(y_hat)
+        gaussian_params = self.entropy_parameters(torch.cat((params, ctx_params), dim=1))
+        scales_hat, means_hat = gaussian_params.chunk(2, 1)
+        _, y_likelihoods = self.gaussian_conditional(y, scales_hat, means=means_hat)
+                 
+        temp = y_hat
+        for i in range(len(self.g_s)-2):
+            temp = self.g_s[i](temp)
+            
+        identity = temp
+        out = self.g_s[len(self.g_s)-2].conv1(temp)
+        out = self.g_s[len(self.g_s)-2].leaky_relu(out)
+        
+        # out = self.g_s[8].conv2(out)
+        w2_gt = self.g_s[len(self.g_s)-2].conv2.weight
+        b2_gt = self.g_s[len(self.g_s)-2].conv2.bias
+        c1, c2, h, w = w2_gt.shape
+
+        A = rearrange(w2_gt, 'c1 c2 h w-> c1 (c2 h w)')
+        # A = rearrange(w2_gt, 'c1 c2 h w-> (c1 h) (c2 w)')
+        U, S, Vh = torch.linalg.svd(A, full_matrices=False)
+        w_svd = U@torch.diag(S+sigma)@Vh
+        w_svd = rearrange(w_svd, 'c1 (c2 h w)-> c1 c2 h w', c2=c2, h=h, w=w)
+        # w_svd = rearrange(w_svd, '(c1 h) (c2 w)-> c1 c2 h w', c1=c1, c2=c2, h=h, w=w)
+        
+        out = torch.nn.functional.conv2d(out, w_svd, b2_gt, padding=1)
+        out = self.g_s[len(self.g_s)-2].leaky_relu(out)
+        temp = out + identity
+        
+        x_hat = self.g_s[len(self.g_s)-1](temp).clamp_(0, 1)
+        return {
+            "x_hat": x_hat,
+            "likelihoods": {"y": y_likelihoods, "z": z_likelihoods},
+        }
+        
     def forward(self, x, w):
         y = self.g_a(x)
         z = self.h_a(y)
@@ -707,11 +795,12 @@ class WeightSplitLoRA(Cheng2020Attention):
         # out = self.g_s[8].conv2(out)
         w2_gt = self.g_s[len(self.g_s)-2].conv2.weight
         b2_gt = self.g_s[len(self.g_s)-2].conv2.bias
-        if len(w.shape) == 5:
-            w2_gt = w2_gt.unsqueeze(0)
-            out = batch_conv(w2_gt+w, out)
-        else:
-            out = torch.nn.functional.conv2d(out, w2_gt+w, b2_gt, padding=1)
+
+        A = rearrange(w2_gt, 'c1 c2 h w-> c1 (c2 h w)')
+        U, S, Vh = torch.linalg.svd(A, full_matrices=False)
+        w_svd = U@torch.diag(S+w)@Vh
+        
+        out = torch.nn.functional.conv2d(out, w_svd, b2_gt, padding=1)
         out = self.g_s[len(self.g_s)-2].leaky_relu(out)
         temp = out + identity
         

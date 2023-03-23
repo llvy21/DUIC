@@ -29,7 +29,7 @@ from tqdm import tqdm
 from models.waseda import Cheng2020Attention
 from models.AdapterWraper import (Cheng2020AttentionAdapter,
                                   Cheng2020AttentionAdapterNew,
-                                  Cheng2020AttentionRefine, WeightSplitLoRA,
+                                  Cheng2020AttentionRefine, WeightSplitLoRA, WeightSplitSVD,
                                   WeightSplitLoRAGateV2)
 from utils import AverageMeter, RDAverageMeter, compute_padding, configure_optimizers
 
@@ -594,6 +594,69 @@ def train_one_image_LoRA_refine_RL_V2(
         
     return out_net["x_hat"], psnr_return, bpp_return.detach(), loss_best.detach()
 
+
+
+def train_one_image_svd_wo_refine(
+    model: WeightSplitSVD, criterion, d, optimizer, lr_scheduler, epoch, clip_max_norm, log
+):
+    model.eval()
+    device = next(model.parameters()).device
+    embedding_dim = model.N
+    r = 1
+    sigma = torch.nn.parameter.Parameter(torch.zeros(embedding_dim * r, device='cuda'), requires_grad=True)
+    optimizer = torch.optim.Adam([sigma], 1e-3)
+    psnr_list = []
+    psnr_actual_list = []
+    d = d.to(device)
+
+    b, c, h, w = d.shape
+    pad, unpad = compute_padding(h, w, min_div=2**6)  # pad to allow 6 strides of 2
+    x_padded = F.pad(d, pad, mode="constant", value=0)
+    with torch.no_grad():
+        y = model.g_a(x_padded)
+        z = model.h_a(y)
+        
+    for i in range(epoch):
+        optimizer.zero_grad()
+        out_net = model.forward1(y, z, sigma.clone())
+        out_net["x_hat"] = F.pad(out_net["x_hat"], unpad)
+        out_criterion = criterion(out_net, d)
+        
+        extra_bpp_loss = model.compress(sigma) / (b*h*w)
+        loss = out_criterion["loss"] + extra_bpp_loss
+        loss.backward()
+        
+        optimizer.step()
+        
+        if i % 100 == 99:
+            sigma_quant = model.quant(sigma)
+            # out_net = model(x_padded, w=BA)
+            out_net1 = model.forward1(y.clone(), z.clone(), sigma_quant)
+            out_net1["x_hat"] = F.pad(out_net1["x_hat"], unpad)
+            out_criterion1 = criterion(out_net1, d)
+            psnr_actual = - 10 * math.log10(out_criterion1["mse_loss"].cpu())
+            psnr_actual_list.append(psnr_actual)
+            
+            bpp_loss = out_criterion["bpp_loss"]
+            loss = extra_bpp_loss + out_criterion["loss"] 
+            extra_bit = model.compress(sigma)
+            extra_bpp_loss = extra_bit / (b*h*w)
+            psnr = - 10 * math.log10(out_criterion["mse_loss"].cpu())
+            psnr_list.append(psnr)
+            bpp_sum = bpp_loss + extra_bpp_loss
+            log.logger.info(
+                f"Val epoch {i}: "
+                f"Loss: {loss:.3f} |"
+                f"Basic Bpp: {bpp_loss:.4f} |"
+                f"Extra Bit: {extra_bit.cpu()} |"
+                f"Bpp_extra: {extra_bpp_loss.cpu():.4f} |"
+                f"Bpp_sum: {bpp_sum:.4f} |"
+            )
+            # log.logger.info("LoRA [%d/%d] * Avg. PSNR_actual:%.2f " % (i, epoch, psnr))
+            log.logger.info("SVD [%d/%d] * Avg. PSNR:%.2f bpp:%.4f loss:%.5f" %
+                            (i, epoch, psnr, bpp_sum, loss))
+
+    return out_net["x_hat"], psnr, bpp_sum.detach(), loss.detach()
 
 def train_one_image_LoRA_wo_refine(
     model: WeightSplitLoRA, criterion, d, optimizer, lr_scheduler, epoch, clip_max_norm, log
@@ -1307,6 +1370,9 @@ def main(argv):
     state_dict = pretrained_models['cheng2020-attn'](quality=args.quality, metric='mse', pretrained=True).state_dict()
     net_lora.load_state_dict(state_dict, strict=False)
     
+    net_svd = WeightSplitSVD(N)
+    net_svd.load_state_dict(state_dict, strict=False)
+    
     net_lora_ad = WeightSplitLoRAGateV2(N)
     net_lora_ad.load_state_dict(state_dict, strict=False)
     
@@ -1319,6 +1385,7 @@ def main(argv):
     
     net_adapter = net_adapter.to(device)
     net_lora = net_lora.to(device)
+    net_svd = net_svd.to(device)
     net_lora_ad = net_lora_ad.to(device)
     net_baseline = net_baseline.to(device)
     
@@ -1353,6 +1420,11 @@ def main(argv):
     log.logger.info(args)
     
     RD_baseline = RDAverageMeter()
+
+    RD_adapter = RDAverageMeter()
+    RD_lora1 = RDAverageMeter()
+    RD_svd = RDAverageMeter()
+    
     RD_refine = RDAverageMeter()
     RD_refine_adapter = RDAverageMeter()
     RD_refine_lora = RDAverageMeter()
@@ -1366,23 +1438,31 @@ def main(argv):
             
             x_hat, psnr_b, bpp_b, loss_b = val_baseline(net_baseline, criterion, d, log)
 
-            loss_r, psnr_r, bpp_r, y, z = train_one_image_refine(net_baseline, criterion, d, epoch, log)
-            # x_hat, psnr_a, bpp_a, loss_a = train_one_image_adapter_wo_refine(net_adapter, criterion1, d, optimizer_adapter, lr_scheduler, epoch, args.clip_max_norm, log)
-            x_hat, psnr_ar, bpp_ar, loss_ar = train_one_image_adapter_refine(net_adapter, criterion1, d, y, z, optimizer_adapter, lr_scheduler, epoch, args.clip_max_norm, log)
-            # x_hat, psnr_l, bpp_l, loss_l, A, B = train_one_image_LoRA_wo_refine(net_lora, criterion, d, None, None, epoch, args.clip_max_norm, log)
-            # x_hat, psnr_lr, loss_lr, A, B = train_one_image_LoRA_refine(net_lora, criterion, d, y, z, None, None, 2000, args.clip_max_norm, log)
+            x_hat, psnr_s, bpp_s, loss_s = train_one_image_svd_wo_refine(net_svd, criterion, d, None, None, epoch, args.clip_max_norm, log)
+            x_hat, psnr_a, bpp_a, loss_a = train_one_image_adapter_wo_refine(net_adapter, criterion1, d, optimizer_adapter, lr_scheduler, epoch, args.clip_max_norm, log)
+            x_hat, psnr_l, bpp_l, loss_l, A, B = train_one_image_LoRA_wo_refine(net_lora, criterion, d, None, None, epoch, args.clip_max_norm, log)
             # x_hat, psnr_la, bpp_la, loss_la = train_one_image_LoRA_wo_refine_RL_V2(net_lora_ad, criterion, d, None, None, epoch, args.clip_max_norm, log)
-            x_hat, psnr_lar, bpp_lar, loss_lar = train_one_image_LoRA_refine_RL_V2(net_lora_ad, criterion, d, y, z, None, None, epoch, args.clip_max_norm, log)
+            # loss_r, psnr_r, bpp_r, y, z = train_one_image_refine(net_baseline, criterion, d, epoch, log)
+            # x_hat, psnr_ar, bpp_ar, loss_ar = train_one_image_adapter_refine(net_adapter, criterion1, d, y, z, optimizer_adapter, lr_scheduler, epoch, args.clip_max_norm, log)
+            # x_hat, psnr_lr, loss_lr, A, B = train_one_image_LoRA_refine(net_lora, criterion, d, y, z, None, None, 2000, args.clip_max_norm, log)
+            # x_hat, psnr_lar, bpp_lar, loss_lar = train_one_image_LoRA_refine_RL_V2(net_lora_ad, criterion, d, y, z, None, None, epoch, args.clip_max_norm, log)
 
-            RD_baseline.update(psnr_b, psnr_b, loss_b)
-            RD_refine.update(psnr_r, psnr_r, loss_r)
-            RD_refine_adapter.update(psnr_ar, psnr_ar, loss_ar)
-            RD_refine_lora.update(psnr_lar, psnr_lar, loss_lar)
+            RD_baseline.update(psnr_b, bpp_b, loss_b)
+            RD_adapter.update(psnr_a, bpp_a, loss_a)
+            RD_lora1.update(psnr_l, bpp_l, loss_l)
+            RD_svd.update(psnr_s, bpp_s, loss_s)
+            # RD_refine.update(psnr_r, bpp_r, loss_r)
+            # RD_refine_adapter.update(psnr_ar, bpp_ar, loss_ar)
+            # RD_refine_lora.update(psnr_lar, bpp_lar, loss_lar)
             
             log.logger.info(f'[{i}] Baseline \t\t PSNR avg: {RD_baseline.psnr.avg:.2f} \t bpp avg: {RD_baseline.bpp.avg:.4f} \t loss avg: {RD_baseline.loss.avg:.5f}')
-            log.logger.info(f'[{i}] Refine \t\t PSNR avg: {RD_refine.psnr.avg:.2f} \t bpp avg: {RD_refine.bpp.avg:.4f} \t loss avg: {RD_refine.loss.avg:.5f}')
-            log.logger.info(f'[{i}] Refine+Adapter \t PSNR avg: {RD_refine_adapter.psnr.avg:.2f} \t bpp avg: {RD_refine_adapter.bpp.avg:.4f} \t loss avg: {RD_refine_adapter.loss.avg:.5f}')
-            log.logger.info(f'[{i}] Refine+LoRA \t PSNR avg: {RD_refine_lora.psnr.avg:.2f} \t bpp avg: {RD_refine_lora.bpp.avg:.4f} \t loss avg: {RD_refine_lora.loss.avg:.5f}')
+            log.logger.info(f'[{i}] SVD \t\t PSNR avg: {RD_svd.psnr.avg:.2f} \t bpp avg: {RD_svd.bpp.avg:.4f} \t loss avg: {RD_svd.loss.avg:.5f}')
+            log.logger.info(f'[{i}] Adapter \t\t PSNR avg: {RD_adapter.psnr.avg:.2f} \t bpp avg: {RD_adapter.bpp.avg:.4f} \t loss avg: {RD_adapter.loss.avg:.5f}')
+            log.logger.info(f'[{i}] LoRA1 \t\t PSNR avg: {RD_lora1.psnr.avg:.2f} \t bpp avg: {RD_lora1.bpp.avg:.4f} \t loss avg: {RD_lora1.loss.avg:.5f}')
+            
+            # log.logger.info(f'[{i}] Refine \t\t PSNR avg: {RD_refine.psnr.avg:.2f} \t bpp avg: {RD_refine.bpp.avg:.4f} \t loss avg: {RD_refine.loss.avg:.5f}')
+            # log.logger.info(f'[{i}] Refine+Adapter \t PSNR avg: {RD_refine_adapter.psnr.avg:.2f} \t bpp avg: {RD_refine_adapter.bpp.avg:.4f} \t loss avg: {RD_refine_adapter.loss.avg:.5f}')
+            # log.logger.info(f'[{i}] Refine+LoRA \t PSNR avg: {RD_refine_lora.psnr.avg:.2f} \t bpp avg: {RD_refine_lora.bpp.avg:.4f} \t loss avg: {RD_refine_lora.loss.avg:.5f}')
         
 if __name__ == "__main__":
     main(sys.argv[1:])
