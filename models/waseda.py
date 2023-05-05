@@ -160,15 +160,13 @@ class Cheng2020Attention(Cheng2020Anchor):
            
     def forward1(self, y, z):
         z_hat, z_likelihoods = self.entropy_bottleneck(z)
-    
+
         params = self.h_s(z_hat)
         y_hat = self.gaussian_conditional.quantize(y, "noise" if self.training else "dequantize")
-            
         ctx_params = self.context_prediction(y_hat)
         gaussian_params = self.entropy_parameters(torch.cat((params, ctx_params), dim=1))
         scales_hat, means_hat = gaussian_params.chunk(2, 1)
         _, y_likelihoods = self.gaussian_conditional(y, scales_hat, means=means_hat)
-            
         x_hat = self.g_s(y_hat).clamp_(0, 1)
         return {
             "x_hat": x_hat,

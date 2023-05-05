@@ -483,7 +483,6 @@ class JointAutoregressiveHierarchicalPriors(MeanScaleHyperprior):
         gaussian_params = self.entropy_parameters(torch.cat((params, ctx_params), dim=1))
         scales_hat, means_hat = gaussian_params.chunk(2, 1)
         _, y_likelihoods = self.gaussian_conditional(y, scales_hat, means=means_hat)
-            
         x_hat = self.g_s(y_hat).clamp_(0, 1)
         return {
             "x_hat": x_hat,

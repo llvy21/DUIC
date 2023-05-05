@@ -30,6 +30,7 @@
 from typing import Any
 
 import math
+from einops import rearrange
 import torch
 import torch.nn as nn
 
@@ -45,8 +46,9 @@ __all__ = [
     "ResidualBlockHyper",
     "ResidualBlockLoRA",
     "ResidualBlockLoRAUpsample",
+    "ResidualBlockSVD",
+    "ResidualBlockSVDUpsample",
     "ResidualBlockUpsample",
-    "ResidualBlockUpsampleLoRA",
     "ResidualBlockAdapter",
     "ResidualBlockWithStride",
     "conv3x3",
@@ -222,37 +224,6 @@ class ResidualBlockUpsample(nn.Module):
         out += identity
         return out
 
-
-class ResidualBlockUpsampleLoRA(nn.Module):
-    """Residual block with sub-pixel upsampling on the last convolution.
-
-    Args:
-        in_ch (int): number of input channels
-        out_ch (int): number of output channels
-        upsample (int): upsampling factor (default: 2)
-    """
-
-    def __init__(self, in_ch: int, out_ch: int, upsample: int = 2):
-        super().__init__()
-        self.subpel_conv = subpel_conv3x3(in_ch, out_ch, upsample)
-        self.leaky_relu = nn.LeakyReLU(inplace=True)
-        self.conv = conv3x3(out_ch, out_ch)
-        self.igdn = GDN(out_ch, inverse=True)
-        self.upsample = subpel_conv3x3(in_ch, out_ch, upsample)
-
-    def forward(self, x: Tensor, conv1_w, conv2_w) -> Tensor:
-        identity = x
-        # out = self.subpel_conv(x)
-        out = torch.nn.functional.conv2d(x, conv1_w, stride=2, padding=1)
-        out = self.subpel_conv[1](out)
-        out = self.leaky_relu(out)
-        # out = self.conv(out)
-        out = torch.nn.functional.conv2d(out, conv2_w, padding=1)
-        out = self.igdn(out)
-        identity = self.upsample(x)
-        out += identity
-        return out
-
 class ResidualBlock(nn.Module):
     """Simple residual block with two 3x3 convolutions.
 
@@ -357,6 +328,78 @@ class FeedforwardGateII(nn.Module):
         # x = softmax[:, 1].contiguous()
         x = x.view(x.size(0), 1, 1, 1)
         return x
+    
+def gate_forward_svd(module: nn.Module, x, sigma, gate):
+    sigma = sigma * gate.squeeze()
+    w_gt = module.weight
+    b_gt = module.bias
+    c1, c2, h, w = w_gt.shape
+    A = rearrange(w_gt, 'c1 c2 h w-> c1 (c2 h w)')
+    U, S, Vh = torch.linalg.svd(A, full_matrices=False)
+    w_svd = U @ torch.diag(S + sigma) @ Vh
+    w_svd = rearrange(w_svd, 'c1 (c2 h w)-> c1 c2 h w', c2=c2, h=h, w=w)
+    out = torch.nn.functional.conv2d(x, w_svd, b_gt, padding=1)
+    return out
+
+class ResidualBlockSVD(ResidualBlock):
+    """Simple residual block with two 3x3 convolutions.
+
+    Args:
+        in_ch (int): number of input channels
+        out_ch (int): number of output channels
+    """
+
+    def __init__(self, in_ch: int, out_ch: int):
+        super().__init__(in_ch, out_ch)
+        self.gate1 = FeedforwardGateII(channel=in_ch)
+        self.gate2 = FeedforwardGateII(channel=in_ch)
+        self.g1 = 1.
+        self.g2 = 1.
+
+    def forward(self, x: Tensor, sigma1, sigma2, warm_up=False) -> Tensor:
+        identity = x
+
+        if warm_up:
+            self.g1 = torch.ones((1), device='cuda', requires_grad=True)
+        else:
+            self.g1 = self.gate1(x)
+        out = gate_forward_svd(self.conv1, x, sigma1, self.g1)
+        out = self.leaky_relu(out)
+        
+        if warm_up:
+            self.g2 = torch.ones((1), device='cuda', requires_grad=True)
+        else:
+            self.g2 = self.gate2(out)
+        out = gate_forward_svd(self.conv2, out, sigma2, self.g2)       
+        out = self.leaky_relu(out)
+    
+        if self.skip is not None:
+            identity = self.skip(x)
+        
+        out = out + identity
+        return out
+
+class ResidualBlockSVDUpsample(ResidualBlockUpsample):
+    """Simple residual block with two 3x3 convolutions.
+
+    Args:
+        in_ch (int): number of input channels
+        out_ch (int): number of output channels
+    """
+
+    def __init__(self, in_ch: int, out_ch: int):
+        super().__init__(in_ch, out_ch)
+        self.pixel_shuffle = nn.PixelShuffle(2)
+
+    def forward(self, x: Tensor, sigma1, sigma2, warm_up=False) -> Tensor:
+        identity = x
+        out = self.subpel_conv(x)
+        out = self.leaky_relu(out)
+        out = self.conv(out)
+        out = self.igdn(out)
+        identity = self.upsample(x)
+        out += identity
+        return out
 
 
 class ResidualBlockLoRA(ResidualBlock):
@@ -374,17 +417,17 @@ class ResidualBlockLoRA(ResidualBlock):
         self.g1 = 1.
         self.g2 = 1.
 
-    def forward(self, x: Tensor, lora_1, lora_2, warm_up=False) -> Tensor:
+    def forward(self, x: Tensor, lora_1, lora_2, warm_up1=False, warm_up2=False) -> Tensor:
         identity = x
 
-        if warm_up:
+        if warm_up1:
             self.g1 = torch.ones((1, 1, 1, 1), device='cuda', requires_grad=True)
         else:
             self.g1 = self.gate1(x)
         out = gate_forward(self.conv1, x, lora_1, self.g1)
         out = self.leaky_relu(out)
         
-        if warm_up:
+        if warm_up2:
             self.g2 = torch.ones((1, 1, 1, 1), device='cuda', requires_grad=True)
         else:
             self.g2 = self.gate2(out)
@@ -398,32 +441,42 @@ class ResidualBlockLoRA(ResidualBlock):
         return out
 
 
-class ResidualBlockLoRAUpsample(ResidualBlock):
-    """Simple residual block with two 3x3 convolutions.
+class ResidualBlockLoRAUpsample(nn.Module):
+    """Residual block with sub-pixel upsampling on the last convolution.
 
     Args:
         in_ch (int): number of input channels
         out_ch (int): number of output channels
+        upsample (int): upsampling factor (default: 2)
     """
 
-    def __init__(self, in_ch: int, out_ch: int):
-        super().__init__(in_ch, out_ch)
-        self.pixel_shuffle = nn.PixelShuffle(2)
+    def __init__(self, in_ch: int, out_ch: int, upsample: int = 2):
+        super().__init__()
+        self.subpel_conv = subpel_conv3x3(in_ch, out_ch, upsample)
+        self.leaky_relu = nn.LeakyReLU(inplace=True)
+        self.conv = conv3x3(out_ch, out_ch)
+        self.igdn = GDN(out_ch, inverse=True)
+        self.upsample = subpel_conv3x3(in_ch, out_ch, upsample)
+        self.gate = FeedforwardGateII(channel=in_ch)
+        self.g = 1.
 
-    def forward(self, x: Tensor, conv1_w, conv2_w, conv1_b=None, conv2_b=None) -> Tensor:
+    def forward(self, x: Tensor, w, warm_up) -> Tensor:
         identity = x
-
-        out = torch.nn.functional.conv2d(x, conv1_w, conv1_b, padding=1)
+        out = self.subpel_conv(x)
         out = self.leaky_relu(out)
-        out = torch.nn.functional.conv2d(out, conv2_w, conv2_b, padding=1)
-        out = self.pixel_shuffle(out)
-        out = self.leaky_relu(out)
-        if self.skip is not None:
-            identity = self.skip(x)
-    
-        out = out + identity
+        
+        # out = self.conv(out)
+        if warm_up:
+            self.g = torch.ones((1, 1, 1, 1), device='cuda', requires_grad=True)
+        else:
+            self.g = self.gate(out)
+        out = gate_forward(self.conv, out, w, self.g)
+        # out = torch.nn.functional.conv2d(out, conv2_w, padding=1)
+        
+        out = self.igdn(out)
+        identity = self.upsample(x)
+        out += identity
         return out
-
 
 class AttentionBlock(nn.Module):
     """Self attention block.

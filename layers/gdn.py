@@ -35,7 +35,7 @@ from torch import Tensor
 
 from compressai.ops.parametrizers import NonNegativeParametrizer
 
-__all__ = ["GDN", "GDN1"]
+__all__ = ["GDN", "GDN1", "GDNLoRA"]
 
 
 class GDN(nn.Module):
@@ -91,6 +91,102 @@ class GDN(nn.Module):
 
         return out
 
+# FFGate-II
+class FeedforwardGateII(nn.Module):
+    """ use single conv (stride=2) layer only"""
+    def __init__(self, pool_size=5, channel=10):
+        super(FeedforwardGateII, self).__init__()
+        self.pool_size = pool_size
+        self.channel = channel
+
+        self.conv1 = conv3x3(channel, channel, stride=2)
+        # self.bn1 = nn.BatchNorm2d(channel)
+        self.relu1 = nn.ReLU(inplace=True)
+
+        pool_size = math.floor(pool_size/2 + 0.5) # for conv stride = 2
+
+        # self.avg_layer = nn.AvgPool2d(pool_size)
+        self.avg_layer = nn.AdaptiveAvgPool2d(1)
+        self.linear_layer = nn.Conv2d(in_channels=channel, out_channels=2,
+                                      kernel_size=1, stride=1)
+        self.prob_layer = nn.Softmax()
+        self.logprob = nn.LogSoftmax()
+
+    def forward(self, x):
+        x = self.conv1(x)
+        # x = self.bn1(x)
+        x = self.relu1(x)
+
+        x = self.avg_layer(x)
+        x = self.linear_layer(x)[:, :]
+        softmax = self.prob_layer(x)
+        # logprob = self.logprob(x)
+        # discretize
+        x = (softmax[:, 1] > 0.5).float().detach() - \
+            softmax[:, 1].detach() + softmax[:, 1]
+        # x = softmax[:, 1].contiguous()
+        x = x.view(x.size(0), 1, 1, 1)
+        return x
+    
+
+class GDNLoRA(nn.Module):
+    r"""Generalized Divisive Normalization layer.
+
+    Introduced in `"Density Modeling of Images Using a Generalized Normalization
+    Transformation" <https://arxiv.org/abs/1511.06281>`_,
+    by Balle Johannes, Valero Laparra, and Eero P. Simoncelli, (2016).
+
+    .. math::
+
+       y[i] = \frac{x[i]}{\sqrt{\beta[i] + \sum_j(\gamma[j, i] * x[j]^2)}}
+
+    """
+
+    def __init__(
+        self,
+        in_channels: int,
+        inverse: bool = False,
+        beta_min: float = 1e-6,
+        gamma_init: float = 0.1,
+    ):
+        super().__init__()
+
+        beta_min = float(beta_min)
+        gamma_init = float(gamma_init)
+        self.inverse = bool(inverse)
+
+        self.beta_reparam = NonNegativeParametrizer(minimum=beta_min)
+        beta = torch.ones(in_channels)
+        beta = self.beta_reparam.init(beta)
+        self.beta = nn.Parameter(beta)
+
+        self.gamma_reparam = NonNegativeParametrizer()
+        gamma = gamma_init * torch.eye(in_channels)
+        gamma = self.gamma_reparam.init(gamma)
+        self.gamma = nn.Parameter(gamma)
+        
+        self.gate = FeedforwardGateII(channel=in_channels)
+        self.g = 1.
+
+    def forward(self, x: Tensor, w, warm_up=False) -> Tensor:
+        _, C, _, _ = x.size()
+
+        beta = self.beta_reparam(self.beta)
+        gamma = self.gamma_reparam(self.gamma)
+        gamma = gamma.reshape(C, C, 1, 1)
+        if warm_up:
+            self.g = torch.ones((1, 1, 1, 1), device='cuda', requires_grad=True)
+        else:
+            self.g = self.gate(out)
+        norm = F.conv2d(x**2, gamma + w * self.g, beta)
+        if self.inverse:
+            norm = torch.sqrt(norm)
+        else:
+            norm = torch.rsqrt(norm)
+
+        out = x * norm
+
+        return out
 
 class GDN1(GDN):
     r"""Simplified GDN layer.
