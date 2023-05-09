@@ -17,7 +17,7 @@ from compressai.zoo import image_models as pretrained_models
 from PIL import Image
 
 from models.waseda import Cheng2020Attention
-from models.AdapterWraper import WeightSplitLoRAGateV4
+from models.AdapterWraper import Cheng2020DynamicAdapt
 from utils import AverageMeter, RDAverageMeter, compute_padding
 
 
@@ -96,7 +96,7 @@ def latent_refine(model: Cheng2020Attention, criterion, d, epoch, log):
     return loss.detach().cpu(), psnr, out_criterion["bpp_loss"].detach().cpu(), y.detach(), z.detach()
 
 
-def dynamic_adapt(model: WeightSplitLoRAGateV4, criterion, d, y, z, epoch, log):
+def dynamic_adapt(model: Cheng2020DynamicAdapt, criterion, d, y, z, epoch, log):
     model.eval()
 
     device = next(model.parameters()).device
@@ -105,7 +105,7 @@ def dynamic_adapt(model: WeightSplitLoRAGateV4, criterion, d, y, z, epoch, log):
 
     lora_list = nn.ParameterList()
     N = 11
-    for i in range(N*2):
+    for i in range(N):
         lora_A = torch.nn.parameter.Parameter(torch.randn(
             (r, embedding_dim), device='cuda'), requires_grad=True)
         nn.init.kaiming_uniform_(lora_A, a=math.sqrt(5))
@@ -196,7 +196,7 @@ def dynamic_adapt(model: WeightSplitLoRAGateV4, criterion, d, y, z, epoch, log):
                             (i, epoch, psnr, bpp_sum, loss))
 
 
-    return psnr, bpp_sum.detach().cpu(), loss.detach().cpu(), gate_num, out_net["x_hat"], final_gate, lora_w_list
+    return psnr, bpp_sum.detach().cpu(), loss.detach().cpu(), gate_num, out_net["x_hat"], final_gate, lora_list
 
 
 def val_baseline(
@@ -247,12 +247,6 @@ def quantize_sga(y: torch.Tensor, tau: float, medians=None, eps: float = 1e-5):
     return outputs
 
 
-def save_checkpoint(state, is_best, model_prefix, filename="checkpoint.pth.tar"):
-    torch.save(state, model_prefix + filename)
-    if is_best:
-        torch.save(state, model_prefix + "checkpoint_best_loss.pth.tar")
-
-
 def parse_args(argv):
     parser = argparse.ArgumentParser(description="Example training script.")
     parser.add_argument(
@@ -293,17 +287,7 @@ def parse_args(argv):
         default=1e-2,
         help="Bit-rate distortion parameter (default: %(default)s)",
     )
-    parser.add_argument(
-        "--batch-size", type=int, default=1, help="Batch size (default: %(default)s)"
-    )
 
-    parser.add_argument(
-        "--patch-size",
-        type=int,
-        nargs=2,
-        default=(256, 256),
-        help="Size of the patches to be cropped (default: %(default)s)",
-    )
     parser.add_argument(
         "--quality",
         type=int,
@@ -399,7 +383,7 @@ def main(argv):
 
     device = 'cuda'
 
-    net_lora_ad = WeightSplitLoRAGateV4(N)
+    net_lora_ad = Cheng2020DynamicAdapt(N)
     net_lora_ad.load_state_dict(state_dict, strict=False)
 
     net_lora_ad = net_lora_ad.to(device)
@@ -417,7 +401,6 @@ def main(argv):
     log.logger.info(args)
 
     RD_baseline = RDAverageMeter()
-    RD_refine = RDAverageMeter()
     RD_refine_loraV6 = RDAverageMeter()
     gateV6 = AverageMeter()
     epoch = args.epochs
@@ -433,7 +416,28 @@ def main(argv):
 
     torchvision.utils.save_image(x_hat_baseline, 'result.png')
     torchvision.utils.save_image(x_hat_adapt, 'result_adapt.png')
-
+    
+    extra_bit = 0
+    
+    with open(f'model_update.bin', "wb") as f:
+        gate_i = [str(int(t.item())) for t in gate]
+        gate_str = ''.join(gate_i)
+        gate_b = int(gate_str, 2).to_bytes(2, 'big')
+        f.write(gate_b)
+        f.write(b'\n'b'\n')
+        extra_bit += len(gate_b)
+        
+    for k in range(len(lora_list)//2):
+        if gate[k] == 1:
+            lora_A = lora_list[k*2]
+            lora_B = lora_list[k*2+1]
+            strings = net_lora_ad.compress2bit(lora_A, lora_B)
+            with open(f'model_update.bin', "ab") as f:
+                f.write(strings[0][0])
+                f.write(b'\n'b'\n')
+                f.write(strings[1][0])
+                f.write(b'\n'b'\n')
+                extra_bit += len(strings[0][0]) + len(strings[1][0])
                 
     RD_baseline.update(psnr_b, bpp_b, loss_b)
     RD_refine_loraV6.update(psnr_lar6, bpp_lar6, loss_lar6)
@@ -442,6 +446,86 @@ def main(argv):
     log.logger.info(f'Baseline \t\t PSNR avg: {RD_baseline.psnr.avg:.2f} \t bpp avg: {RD_baseline.bpp.avg:.4f} \t loss avg: {RD_baseline.loss.avg:.5f}')
     log.logger.info(f'Dynamic Adapt \t PSNR avg: {RD_refine_loraV6.psnr.avg:.2f} \t bpp avg: {RD_refine_loraV6.bpp.avg:.4f} \t loss avg: {RD_refine_loraV6.loss.avg:.5f} \t gate avg: {gateV6.avg:.2f}')
 
+
+    file = 'model_update.bin'
+    gate = decompress_gate(file)
+    lora_list = decompress_diff(net_lora_ad, file)
+    lora_w_list = []
+    k = 0 
+    for g in gate:
+        if g == 0:
+            lora_A = lora_list[0]
+            lora_B = lora_list[1]
+            w = (lora_B @ lora_A).unsqueeze(2).unsqueeze(3)
+            lora_w_list.append(torch.zeros_like(w))
+        else:            
+            lora_A = lora_list[k*2]
+            lora_B = lora_list[k*2+1] 
+            w = (lora_B @ lora_A).unsqueeze(2).unsqueeze(3)  
+            lora_w_list.append(w)
+            k+=1
+        
+    with torch.no_grad():
+        d = d.to(device)
+        h, w = d.size(2), d.size(3)
+        # pad to allow 6 strides of 2
+        pad, unpad = compute_padding(h, w, min_div=2**6)
+        x_padded = F.pad(d, pad, mode="constant", value=0)
+        out_net = net_lora_ad.forward1(y.clone(), z.clone(), lora_w_list, False, gate)
+        b, c, h, w = d.shape
+        NUM_PIXEL = b*h*w
+        extra_bpp_loss = extra_bit / NUM_PIXEL
+        out_net["x_hat"] = F.pad(out_net["x_hat"], unpad)
+        out_criterion = criterion(out_net, d)
+        bpp_loss = out_criterion["bpp_loss"]
+        bpp_sum = bpp_loss + extra_bpp_loss
+        loss = out_criterion["loss"] + extra_bpp_loss
+        psnr = - 10 * math.log10(out_criterion["mse_loss"].cpu())
+        log.logger.info("[Load model update] "
+            f"Loss: {loss:.3f} |"
+            f"Basic Bpp: {bpp_loss:.4f} |"
+            f"Extra Bit: {extra_bit*8} |"
+            f"Bpp_extra: {extra_bpp_loss:.4f} |"
+            f"Bpp_sum: {bpp_sum:.4f} |"
+            f"Gate:{gate} |"
+        )
+        
+def load_model_update():
+    return
+            
+def decompress_diff(net, file='model_update.bin'):
+    with open(file, "rb") as f:
+        gate_b = f.read()
+        weights = gate_b.split(b'\n'b'\n')[1:-1]
+        
+        lora_list = []
+        idx = 0
+        for w in weights:
+            w = decompress_from_bytes(net, [w], idx)
+            lora_list.append(w)
+            idx += 1
+    return lora_list
+        
+def decompress_gate(file='model_update.bin'):
+    with open(file, "rb") as f:
+        gate_b = f.read(2)
+        gate_str = str(bin(int.from_bytes(gate_b,'big')))[2:]
+        gate = []
+        for i in range(len(gate_str)):
+            gate.append(int(gate_str[i]))        
+        while len(gate) < 11:
+            gate.insert(0,0)
+    return gate
+
+def decompress_from_bytes(net, weight, idx):
+    N = net.N
+    if idx % 2 == 0:
+        param = torch.ones((2, N))
+    else:
+        param = torch.ones((N, 2))
+    diff = net.w_ent.decompress(weight, (param.numel(),))
+    diff = diff.reshape(param.shape)
+    return diff
 
 if __name__ == "__main__":
     main(sys.argv[1:])
