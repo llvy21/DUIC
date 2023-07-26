@@ -12,7 +12,7 @@ Image Compression
 The latest advancements in neural image compression show great potential in surpassing the rate-distortion performance of conventional standard codecs. Nevertheless, there exists an indelible domain gap between the datasets utilized for training (i.e., natural images) and those utilized for inference (e.g., artistic images).
 
 <p align="center">
-    <img src="./fig/background.jpg" width="50%">
+    <img src="./fig/background.jpg" width="35%">
     <br>
     <span><b>Figure 1. : (upper left) Three state-of-the-art neural image codecs perform fairly well on the Kodak dataset. (upper right) But their performance drops significantly on an out-of-domain dataset containing artistic images. </b></span>
 </p>
@@ -22,7 +22,6 @@ Our proposal involves a low-rank adaptation approach aimed at addressing the rat
 
 <p align="center">
     <img src="./fig/pipeline.png" width="70%"> <br>
-
     <span><b>Figure 2. Simplified pipeline of our dynamic instance adaptive method.</b></span>
 </p>
 
