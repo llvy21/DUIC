@@ -1,0 +1,4 @@
+*.log
+model_update.bin
+__pycache__/
+*.pyc

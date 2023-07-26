@@ -289,93 +289,11 @@ def decode_array(string: bytes, data_type: str) -> np.ndarray:
     else:
         raise NotImplementedError
 
-class SpikeAndSlabCDF:
-    def __init__(
-        self, width: float = 5e-3, sigma: float = 5e-2, alpha: float = 1000, mean=torch.tensor(0.0)
-    ) -> None:
-        self.alpha = alpha
-        self.slab = D.Normal(mean, torch.tensor(sigma))
-        if width != 0:
-            self.spike = D.Normal(mean, torch.tensor(width / 6))
-        else:
-            self.spike = None
-
-    def __call__(self, x: torch.Tensor) -> torch.Tensor:
-        cdf_slab = self.slab.cdf(x)
-        if self.spike is None:
-            return cdf_slab
-        else:
-            cdf_spike = self.spike.cdf(x)
-            return (cdf_slab + self.alpha * cdf_spike) / (1 + self.alpha)
-
+# following [Tsubota+, WACV 23]
 class LogisticCDF:
-
     def __init__(self, scale: float, loc: float = 0.0) -> None:
         self.loc = loc
         self.scale = scale
 
     def __call__(self, x: torch.Tensor) -> torch.Tensor:
         return 0.5 + 0.5 * torch.tanh((x - self.loc) / self.scale / 2)
-
-# def cal_adapter_bpp_cost(net):
-#     device = 'cuda'
-#     adapter_dict = dict()
-#     for name, p in net.named_parameters():
-#         if "adapter" in name:
-#             adapter_dict[name] = p
-
-#     extra_bit_sum = 0
-#     for key, param in adapter_dict.items():
-#         distrib = LogisticCDF(scale=0.05)
-#         w_ent = WeightEntropyModule(distrib, 0.06, data_type='uint8').to(device)
-#         w_shape = param.reshape(1, 1, -1).shape
-#         p_init = torch.zeros_like(param)
-#         diff = (param - p_init).reshape(w_shape)
-#         weight = w_ent.compress(diff)
-#         extra_bit = len(weight[0]) * 8
-#         extra_bit_sum += extra_bit
-        
-#     return extra_bit_sum
-
-# def cal_extra_bpp_cost(net, loc=0.0):
-#     device = 'cuda'
-#     adapter_dict = dict()
-#     for name, p in net.named_parameters():
-#         if "adapter" in name:
-#             adapter_dict[name] = p
-
-#     extra_bit_sum = 0
-#     for key, param in adapter_dict.items():
-#         # distrib = LogisticCDF(scale=0.05)
-#         distrib = SpikeAndSlabCDF(mean=loc)
-#         w_ent = WeightEntropyModule(distrib, 0.06, data_type='uint8').to(device)
-#         w_shape = param.reshape(1, 1, -1).shape
-#         p_init = torch.zeros_like(param)
-#         diff = (param - p_init).reshape(w_shape)
-#         weight = w_ent.compress(diff)
-#         extra_bit = len(weight[0]) * 8
-#         # print(param)
-#         # print(key, param.shape, w_shape, extra_bit,)
-#         extra_bit_sum += extra_bit
-        
-#     return extra_bit_sum
-
-# def compress_weight(param, width=5e-3):
-#     device = 'cuda'
-#     distrib = SpikeAndSlabCDF(width=width)
-#     w_ent = WeightEntropyModule(distrib, width=width, data_type='uint8').to(device)
-#     w_shape = param.reshape(1, 1, -1).shape
-#     diff = (param).reshape(w_shape)
-#     weight = w_ent.compress(diff)
-#     return weight
-
-# def decompress_weight(weight, param, width=5e-3):
-#     device = 'cuda'
-#     distrib = SpikeAndSlabCDF(width=width)
-#     w_ent = WeightEntropyModule(distrib, width=width, data_type='uint8').to(device)
-#     diff = w_ent.decompress(weight, (param.numel(),))
-#     diff = diff.reshape(param.shape)
-#     return diff
-
-# def cal_modified_bpp_cost(weight):
-#     return len(weight[0]) * 8

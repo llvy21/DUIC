@@ -1,65 +1,143 @@
-2023-05-09 17:02:34,875 - Namespace(batch_size=1, checkpoint=None, clip_max_norm=1.0, cuda=True, epochs=2000, image='./test.png', learning_rate=0.001, lmbda=0.0016, model='cheng2020-attn', model_prefix='./', num_workers=4, patch_size=(256, 256), quality=1, seed=None)
-2023-05-09 17:02:35,843 - [Baseline] * Avg. PSNR:21.63 bpp:0.3229 loss:1.03842
-2023-05-09 17:02:44,561 - Latent Refine [99/2000] * Avg. PSNR:21.78 bpp:0.3154 loss:1.00537
-2023-05-09 17:02:52,057 - Latent Refine [199/2000] * Avg. PSNR:21.91 bpp:0.3087 loss:0.97905
-2023-05-09 17:02:59,567 - Latent Refine [299/2000] * Avg. PSNR:22.00 bpp:0.3042 loss:0.96072
-2023-05-09 17:03:07,188 - Latent Refine [399/2000] * Avg. PSNR:22.08 bpp:0.3002 loss:0.94526
-2023-05-09 17:03:14,790 - Latent Refine [499/2000] * Avg. PSNR:22.13 bpp:0.2970 loss:0.93348
-2023-05-09 17:03:22,463 - Latent Refine [599/2000] * Avg. PSNR:22.18 bpp:0.2944 loss:0.92412
-2023-05-09 17:03:30,112 - Latent Refine [699/2000] * Avg. PSNR:22.22 bpp:0.2927 loss:0.91679
-2023-05-09 17:03:37,766 - Latent Refine [799/2000] * Avg. PSNR:22.25 bpp:0.2912 loss:0.91101
-2023-05-09 17:03:45,422 - Latent Refine [899/2000] * Avg. PSNR:22.28 bpp:0.2887 loss:0.90437
-2023-05-09 17:03:52,962 - Latent Refine [999/2000] * Avg. PSNR:22.31 bpp:0.2870 loss:0.89813
-2023-05-09 17:04:00,505 - Latent Refine [1099/2000] * Avg. PSNR:22.33 bpp:0.2866 loss:0.89544
-2023-05-09 17:04:08,119 - Latent Refine [1199/2000] * Avg. PSNR:22.34 bpp:0.2863 loss:0.89290
-2023-05-09 17:04:15,718 - Latent Refine [1299/2000] * Avg. PSNR:22.36 bpp:0.2849 loss:0.88966
-2023-05-09 17:04:23,325 - Latent Refine [1399/2000] * Avg. PSNR:22.37 bpp:0.2842 loss:0.88675
-2023-05-09 17:04:30,938 - Latent Refine [1499/2000] * Avg. PSNR:22.39 bpp:0.2830 loss:0.88339
-2023-05-09 17:04:38,549 - Latent Refine [1599/2000] * Avg. PSNR:22.39 bpp:0.2830 loss:0.88257
-2023-05-09 17:04:46,132 - Latent Refine [1699/2000] * Avg. PSNR:22.40 bpp:0.2830 loss:0.88127
-2023-05-09 17:04:53,679 - Latent Refine [1799/2000] * Avg. PSNR:22.42 bpp:0.2827 loss:0.87890
-2023-05-09 17:05:01,250 - Latent Refine [1899/2000] * Avg. PSNR:22.42 bpp:0.2817 loss:0.87765
-2023-05-09 17:05:08,946 - Latent Refine [1999/2000] * Avg. PSNR:22.43 bpp:0.2804 loss:0.87535
-2023-05-09 17:05:16,328 - Val step 99: Loss: 0.682 |Basic Bpp: 0.2750 |Extra Bit: 25610.955078125 |Bpp_extra: 0.0466 |Bpp_sum: 0.3216 |lambda:0.0016 |Gate:[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] |
-2023-05-09 17:05:16,329 - Dynamic Adapt [99/2000] * Avg. PSNR:24.60 bpp:0.3216 loss:0.68197
-2023-05-09 17:05:26,409 - Val step 199: Loss: 0.659 |Basic Bpp: 0.2750 |Extra Bit: 14237.7109375 |Bpp_extra: 0.0259 |Bpp_sum: 0.3009 |lambda:0.0016 |Gate:[0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1] |
-2023-05-09 17:05:26,409 - Dynamic Adapt [199/2000] * Avg. PSNR:24.63 bpp:0.3009 loss:0.65886
-2023-05-09 17:05:34,190 - Val step 299: Loss: 0.650 |Basic Bpp: 0.2750 |Extra Bit: 14378.3837890625 |Bpp_extra: 0.0262 |Bpp_sum: 0.3012 |lambda:0.0016 |Gate:[0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1] |
-2023-05-09 17:05:34,191 - Dynamic Adapt [299/2000] * Avg. PSNR:24.74 bpp:0.3012 loss:0.65011
-2023-05-09 17:05:41,969 - Val step 399: Loss: 0.643 |Basic Bpp: 0.2750 |Extra Bit: 14550.015625 |Bpp_extra: 0.0265 |Bpp_sum: 0.3015 |lambda:0.0016 |Gate:[0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1] |
-2023-05-09 17:05:41,970 - Dynamic Adapt [399/2000] * Avg. PSNR:24.84 bpp:0.3015 loss:0.64261
-2023-05-09 17:05:49,692 - Val step 499: Loss: 0.635 |Basic Bpp: 0.2750 |Extra Bit: 14759.130859375 |Bpp_extra: 0.0269 |Bpp_sum: 0.3019 |lambda:0.0016 |Gate:[0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1] |
-2023-05-09 17:05:49,693 - Dynamic Adapt [499/2000] * Avg. PSNR:24.94 bpp:0.3019 loss:0.63526
-2023-05-09 17:05:57,386 - Val step 599: Loss: 0.627 |Basic Bpp: 0.2750 |Extra Bit: 14979.7119140625 |Bpp_extra: 0.0273 |Bpp_sum: 0.3023 |lambda:0.0016 |Gate:[0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1] |
-2023-05-09 17:05:57,387 - Dynamic Adapt [599/2000] * Avg. PSNR:25.06 bpp:0.3023 loss:0.62684
-2023-05-09 17:06:05,161 - Val step 699: Loss: 0.624 |Basic Bpp: 0.2750 |Extra Bit: 15145.4482421875 |Bpp_extra: 0.0276 |Bpp_sum: 0.3026 |lambda:0.0016 |Gate:[0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1] |
-2023-05-09 17:06:05,162 - Dynamic Adapt [699/2000] * Avg. PSNR:25.10 bpp:0.3026 loss:0.62402
-2023-05-09 17:06:12,948 - Val step 799: Loss: 0.620 |Basic Bpp: 0.2750 |Extra Bit: 15282.8046875 |Bpp_extra: 0.0278 |Bpp_sum: 0.3028 |lambda:0.0016 |Gate:[0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1] |
-2023-05-09 17:06:12,949 - Dynamic Adapt [799/2000] * Avg. PSNR:25.16 bpp:0.3028 loss:0.62004
-2023-05-09 17:06:20,753 - Val step 899: Loss: 0.616 |Basic Bpp: 0.2750 |Extra Bit: 15380.6796875 |Bpp_extra: 0.0280 |Bpp_sum: 0.3030 |lambda:0.0016 |Gate:[0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1] |
-2023-05-09 17:06:20,753 - Dynamic Adapt [899/2000] * Avg. PSNR:25.21 bpp:0.3030 loss:0.61627
-2023-05-09 17:06:28,512 - Val step 999: Loss: 0.614 |Basic Bpp: 0.2750 |Extra Bit: 15461.3583984375 |Bpp_extra: 0.0281 |Bpp_sum: 0.3031 |lambda:0.0016 |Gate:[0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1] |
-2023-05-09 17:06:28,513 - Dynamic Adapt [999/2000] * Avg. PSNR:25.24 bpp:0.3031 loss:0.61447
-2023-05-09 17:06:36,282 - Val step 1099: Loss: 0.614 |Basic Bpp: 0.2750 |Extra Bit: 15538.67578125 |Bpp_extra: 0.0283 |Bpp_sum: 0.3033 |lambda:0.0016 |Gate:[0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1] |
-2023-05-09 17:06:36,282 - Dynamic Adapt [1099/2000] * Avg. PSNR:25.24 bpp:0.3033 loss:0.61432
-2023-05-09 17:06:44,080 - Val step 1199: Loss: 0.613 |Basic Bpp: 0.2750 |Extra Bit: 15595.416015625 |Bpp_extra: 0.0284 |Bpp_sum: 0.3034 |lambda:0.0016 |Gate:[0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1] |
-2023-05-09 17:06:44,081 - Dynamic Adapt [1199/2000] * Avg. PSNR:25.26 bpp:0.3034 loss:0.61296
-2023-05-09 17:06:51,891 - Val step 1299: Loss: 0.609 |Basic Bpp: 0.2750 |Extra Bit: 15652.0634765625 |Bpp_extra: 0.0285 |Bpp_sum: 0.3035 |lambda:0.0016 |Gate:[0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1] |
-2023-05-09 17:06:51,892 - Dynamic Adapt [1299/2000] * Avg. PSNR:25.33 bpp:0.3035 loss:0.60864
-2023-05-09 17:06:59,681 - Val step 1399: Loss: 0.609 |Basic Bpp: 0.2750 |Extra Bit: 15709.021484375 |Bpp_extra: 0.0286 |Bpp_sum: 0.3036 |lambda:0.0016 |Gate:[0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1] |
-2023-05-09 17:06:59,682 - Dynamic Adapt [1399/2000] * Avg. PSNR:25.33 bpp:0.3036 loss:0.60850
-2023-05-09 17:07:07,556 - Val step 1499: Loss: 0.609 |Basic Bpp: 0.2750 |Extra Bit: 15762.115234375 |Bpp_extra: 0.0287 |Bpp_sum: 0.3037 |lambda:0.0016 |Gate:[0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1] |
-2023-05-09 17:07:07,557 - Dynamic Adapt [1499/2000] * Avg. PSNR:25.32 bpp:0.3037 loss:0.60933
-2023-05-09 17:07:15,447 - Val step 1599: Loss: 0.608 |Basic Bpp: 0.2750 |Extra Bit: 15809.5419921875 |Bpp_extra: 0.0288 |Bpp_sum: 0.3038 |lambda:0.0016 |Gate:[0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1] |
-2023-05-09 17:07:15,448 - Dynamic Adapt [1599/2000] * Avg. PSNR:25.34 bpp:0.3038 loss:0.60810
-2023-05-09 17:07:23,483 - Val step 1699: Loss: 0.606 |Basic Bpp: 0.2750 |Extra Bit: 15814.919921875 |Bpp_extra: 0.0288 |Bpp_sum: 0.3038 |lambda:0.0016 |Gate:[0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1] |
-2023-05-09 17:07:23,483 - Dynamic Adapt [1699/2000] * Avg. PSNR:25.37 bpp:0.3038 loss:0.60571
-2023-05-09 17:07:31,543 - Val step 1799: Loss: 0.607 |Basic Bpp: 0.2750 |Extra Bit: 15815.4833984375 |Bpp_extra: 0.0288 |Bpp_sum: 0.3038 |lambda:0.0016 |Gate:[0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1] |
-2023-05-09 17:07:31,544 - Dynamic Adapt [1799/2000] * Avg. PSNR:25.35 bpp:0.3038 loss:0.60711
-2023-05-09 17:07:39,453 - Val step 1899: Loss: 0.607 |Basic Bpp: 0.2750 |Extra Bit: 15821.1552734375 |Bpp_extra: 0.0288 |Bpp_sum: 0.3038 |lambda:0.0016 |Gate:[0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1] |
-2023-05-09 17:07:39,453 - Dynamic Adapt [1899/2000] * Avg. PSNR:25.35 bpp:0.3038 loss:0.60733
-2023-05-09 17:07:47,265 - Val step 1999: Loss: 0.606 |Basic Bpp: 0.2750 |Extra Bit: 15829.109375 |Bpp_extra: 0.0288 |Bpp_sum: 0.3038 |lambda:0.0016 |Gate:[0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1] |
-2023-05-09 17:07:47,265 - Dynamic Adapt [1999/2000] * Avg. PSNR:25.37 bpp:0.3038 loss:0.60616
-2023-05-09 17:07:47,946 - Baseline 		 PSNR avg: 21.63 	 bpp avg: 0.3229 	 loss avg: 1.03842
-2023-05-09 17:07:47,946 - Dynamic Adapt 	 PSNR avg: 25.37 	 bpp avg: 0.3038 	 loss avg: 0.60616 	 gate avg: 6.00
-2023-05-09 17:07:47,979 - [Load model update] Loss: 0.582 |Basic Bpp: 0.2750 |Extra Bit: 16400 |Bpp_extra: 0.0037 |Bpp_sum: 0.2787 |Gate:[0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1] |
+2023-07-26 15:43:52,052 - Namespace(checkpoint=None, clip_max_norm=1.0, cuda=True, epochs=2000, image='./test.png', learning_rate=0.001, lmbda=0.0016, model='cheng2020-attn', model_prefix='./', num_workers=4, quality=1, seed=None)
+2023-07-26 15:44:49,610 - Namespace(checkpoint=None, clip_max_norm=1.0, cuda=True, epochs=2000, image='./test.png', learning_rate=0.001, lmbda=0.0016, model='cheng2020-attn', model_prefix='./', num_workers=4, quality=1, seed=None)
+2023-07-26 15:44:51,904 - [Baseline] * Avg. PSNR:21.63 bpp:0.3229 loss:1.03842
+2023-07-26 15:45:00,685 - Latent Refine [99/2000] * Avg. PSNR:21.89 bpp:0.3762 loss:1.04877
+2023-07-26 15:45:08,139 - Latent Refine [199/2000] * Avg. PSNR:22.05 bpp:0.3577 loss:1.00664
+2023-07-26 15:45:15,552 - Latent Refine [299/2000] * Avg. PSNR:22.13 bpp:0.3433 loss:0.98008
+2023-07-26 15:45:22,973 - Latent Refine [399/2000] * Avg. PSNR:22.23 bpp:0.3339 loss:0.95666
+2023-07-26 15:45:30,400 - Latent Refine [499/2000] * Avg. PSNR:22.32 bpp:0.3233 loss:0.93292
+2023-07-26 15:45:37,834 - Latent Refine [599/2000] * Avg. PSNR:22.39 bpp:0.3174 loss:0.91752
+2023-07-26 15:45:45,275 - Latent Refine [699/2000] * Avg. PSNR:22.45 bpp:0.3118 loss:0.90396
+2023-07-26 15:45:52,727 - Latent Refine [799/2000] * Avg. PSNR:22.51 bpp:0.3069 loss:0.89067
+2023-07-26 15:46:00,171 - Latent Refine [899/2000] * Avg. PSNR:22.57 bpp:0.3039 loss:0.88026
+2023-07-26 15:46:07,612 - Latent Refine [999/2000] * Avg. PSNR:22.62 bpp:0.3002 loss:0.86973
+2023-07-26 15:46:15,046 - Latent Refine [1099/2000] * Avg. PSNR:22.65 bpp:0.2970 loss:0.86246
+2023-07-26 15:46:22,472 - Latent Refine [1199/2000] * Avg. PSNR:22.69 bpp:0.2950 loss:0.85484
+2023-07-26 15:46:29,907 - Latent Refine [1299/2000] * Avg. PSNR:22.72 bpp:0.2915 loss:0.84705
+2023-07-26 15:46:45,724 - Namespace(checkpoint=None, clip_max_norm=1.0, cuda=True, epochs=2000, image='./test.png', learning_rate=0.001, lmbda=0.0016, model='cheng2020-attn', model_prefix='./', num_workers=4, quality=1, seed=None)
+2023-07-26 15:46:48,036 - Baseline * Avg. PSNR:21.63 bpp:0.3229 loss:1.03842
+2023-07-26 15:46:56,802 - Latent Refine [99/2000] * Avg. PSNR:21.90 bpp:0.3746 loss:1.04702
+2023-07-26 15:47:56,267 - Namespace(checkpoint=None, clip_max_norm=1.0, cuda=True, epochs=2000, image='./test.png', learning_rate=0.001, lmbda=0.0016, model='cheng2020-attn', model_prefix='./', num_workers=4, quality=1, seed=None)
+2023-07-26 15:47:58,560 - Baseline * Avg. PSNR:21.63 bpp:0.3229 loss:1.03842
+2023-07-26 15:48:07,345 - Latent Refine [99/2000] * Avg. PSNR:21.90 bpp:0.3774 loss:1.04952
+2023-07-26 15:48:14,830 - Latent Refine [199/2000] * Avg. PSNR:22.02 bpp:0.3578 loss:1.01076
+2023-07-26 15:48:22,255 - Latent Refine [299/2000] * Avg. PSNR:22.14 bpp:0.3437 loss:0.97912
+2023-07-26 15:48:29,681 - Latent Refine [399/2000] * Avg. PSNR:22.25 bpp:0.3315 loss:0.95157
+2023-07-26 15:48:37,107 - Latent Refine [499/2000] * Avg. PSNR:22.33 bpp:0.3226 loss:0.93096
+2023-07-26 15:48:44,537 - Latent Refine [599/2000] * Avg. PSNR:22.39 bpp:0.3158 loss:0.91638
+2023-07-26 15:48:51,965 - Latent Refine [699/2000] * Avg. PSNR:22.46 bpp:0.3128 loss:0.90352
+2023-07-26 15:48:59,395 - Latent Refine [799/2000] * Avg. PSNR:22.50 bpp:0.3079 loss:0.89230
+2023-07-26 15:49:06,855 - Latent Refine [899/2000] * Avg. PSNR:22.57 bpp:0.3041 loss:0.88021
+2023-07-26 15:49:14,293 - Latent Refine [999/2000] * Avg. PSNR:22.61 bpp:0.3008 loss:0.87109
+2023-07-26 15:49:21,735 - Latent Refine [1099/2000] * Avg. PSNR:22.64 bpp:0.2966 loss:0.86290
+2023-07-26 15:49:29,183 - Latent Refine [1199/2000] * Avg. PSNR:22.69 bpp:0.2938 loss:0.85408
+2023-07-26 15:49:36,623 - Latent Refine [1299/2000] * Avg. PSNR:22.72 bpp:0.2911 loss:0.84660
+2023-07-26 15:49:44,061 - Latent Refine [1399/2000] * Avg. PSNR:22.75 bpp:0.2895 loss:0.84173
+2023-07-26 15:49:51,498 - Latent Refine [1499/2000] * Avg. PSNR:22.78 bpp:0.2866 loss:0.83559
+2023-07-26 15:49:58,934 - Latent Refine [1599/2000] * Avg. PSNR:22.80 bpp:0.2845 loss:0.83032
+2023-07-26 15:50:06,402 - Latent Refine [1699/2000] * Avg. PSNR:22.82 bpp:0.2827 loss:0.82645
+2023-07-26 15:50:13,835 - Latent Refine [1799/2000] * Avg. PSNR:22.83 bpp:0.2798 loss:0.82233
+2023-07-26 15:50:21,284 - Latent Refine [1899/2000] * Avg. PSNR:22.85 bpp:0.2784 loss:0.81878
+2023-07-26 15:50:28,724 - Latent Refine [1999/2000] * Avg. PSNR:22.85 bpp:0.2770 loss:0.81611
+2023-07-26 15:50:36,134 - Val step 99: Loss: 0.674 PSNR: 24.67 bpp_sum: 0.3190 (0.2724 + 0.0466) |Gate:[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] |
+2023-07-26 15:50:36,135 - Dynamic Adapt [99/2000] * Avg. PSNR:24.67 bpp:0.3190 loss:0.67428
+2023-07-26 15:50:46,398 - Val step 199: Loss: 0.700 PSNR: 23.95 bpp_sum: 0.2811 (0.2724 + 0.0087) |Gate:[0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1] |
+2023-07-26 15:50:46,398 - Dynamic Adapt [199/2000] * Avg. PSNR:23.95 bpp:0.2811 loss:0.69992
+2023-07-26 15:50:54,813 - Val step 299: Loss: 0.645 PSNR: 24.78 bpp_sum: 0.2986 (0.2724 + 0.0262) |Gate:[0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1] |
+2023-07-26 15:50:54,813 - Dynamic Adapt [299/2000] * Avg. PSNR:24.78 bpp:0.2986 loss:0.64501
+2023-07-26 15:51:03,285 - Val step 399: Loss: 0.641 PSNR: 24.83 bpp_sum: 0.2989 (0.2724 + 0.0265) |Gate:[0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1] |
+2023-07-26 15:51:03,286 - Dynamic Adapt [399/2000] * Avg. PSNR:24.83 bpp:0.2989 loss:0.64078
+2023-07-26 15:51:11,774 - Val step 499: Loss: 0.636 PSNR: 24.84 bpp_sum: 0.2948 (0.2724 + 0.0224) |Gate:[0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1] |
+2023-07-26 15:51:11,774 - Dynamic Adapt [499/2000] * Avg. PSNR:24.84 bpp:0.2948 loss:0.63589
+2023-07-26 15:51:20,188 - Val step 599: Loss: 0.632 PSNR: 24.89 bpp_sum: 0.2951 (0.2724 + 0.0227) |Gate:[0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1] |
+2023-07-26 15:51:20,189 - Dynamic Adapt [599/2000] * Avg. PSNR:24.89 bpp:0.2951 loss:0.63238
+2023-07-26 15:51:28,599 - Val step 699: Loss: 0.624 PSNR: 25.00 bpp_sum: 0.2954 (0.2724 + 0.0230) |Gate:[0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1] |
+2023-07-26 15:51:28,599 - Dynamic Adapt [699/2000] * Avg. PSNR:25.00 bpp:0.2954 loss:0.62428
+2023-07-26 15:51:37,001 - Val step 799: Loss: 0.621 PSNR: 25.05 bpp_sum: 0.2956 (0.2724 + 0.0232) |Gate:[0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1] |
+2023-07-26 15:51:37,001 - Dynamic Adapt [799/2000] * Avg. PSNR:25.05 bpp:0.2956 loss:0.62071
+2023-07-26 15:51:45,388 - Val step 899: Loss: 0.621 PSNR: 25.04 bpp_sum: 0.2958 (0.2724 + 0.0234) |Gate:[0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1] |
+2023-07-26 15:51:45,388 - Dynamic Adapt [899/2000] * Avg. PSNR:25.04 bpp:0.2958 loss:0.62149
+2023-07-26 15:51:53,786 - Val step 999: Loss: 0.617 PSNR: 25.11 bpp_sum: 0.2960 (0.2724 + 0.0236) |Gate:[0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1] |
+2023-07-26 15:51:53,786 - Dynamic Adapt [999/2000] * Avg. PSNR:25.11 bpp:0.2960 loss:0.61687
+2023-07-26 15:52:02,268 - Val step 1099: Loss: 0.614 PSNR: 25.15 bpp_sum: 0.2961 (0.2724 + 0.0237) |Gate:[0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1] |
+2023-07-26 15:52:02,268 - Dynamic Adapt [1099/2000] * Avg. PSNR:25.15 bpp:0.2961 loss:0.61360
+2023-07-26 15:52:10,697 - Val step 1199: Loss: 0.613 PSNR: 25.17 bpp_sum: 0.2963 (0.2724 + 0.0239) |Gate:[0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1] |
+2023-07-26 15:52:10,697 - Dynamic Adapt [1199/2000] * Avg. PSNR:25.17 bpp:0.2963 loss:0.61273
+2023-07-26 15:52:19,081 - Val step 1299: Loss: 0.611 PSNR: 25.20 bpp_sum: 0.2964 (0.2724 + 0.0240) |Gate:[0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1] |
+2023-07-26 15:52:19,082 - Dynamic Adapt [1299/2000] * Avg. PSNR:25.20 bpp:0.2964 loss:0.61088
+2023-07-26 15:52:27,480 - Val step 1399: Loss: 0.610 PSNR: 25.21 bpp_sum: 0.2965 (0.2724 + 0.0241) |Gate:[0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1] |
+2023-07-26 15:52:27,480 - Dynamic Adapt [1399/2000] * Avg. PSNR:25.21 bpp:0.2965 loss:0.60981
+2023-07-26 15:52:35,864 - Val step 1499: Loss: 0.610 PSNR: 25.21 bpp_sum: 0.2966 (0.2724 + 0.0242) |Gate:[0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1] |
+2023-07-26 15:52:35,865 - Dynamic Adapt [1499/2000] * Avg. PSNR:25.21 bpp:0.2966 loss:0.60992
+2023-07-26 15:52:44,248 - Val step 1599: Loss: 0.608 PSNR: 25.24 bpp_sum: 0.2967 (0.2724 + 0.0243) |Gate:[0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1] |
+2023-07-26 15:52:44,248 - Dynamic Adapt [1599/2000] * Avg. PSNR:25.24 bpp:0.2967 loss:0.60765
+2023-07-26 15:52:52,640 - Val step 1699: Loss: 0.608 PSNR: 25.24 bpp_sum: 0.2967 (0.2724 + 0.0243) |Gate:[0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1] |
+2023-07-26 15:52:52,640 - Dynamic Adapt [1699/2000] * Avg. PSNR:25.24 bpp:0.2967 loss:0.60836
+2023-07-26 15:53:01,028 - Val step 1799: Loss: 0.609 PSNR: 25.23 bpp_sum: 0.2967 (0.2724 + 0.0243) |Gate:[0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1] |
+2023-07-26 15:53:01,028 - Dynamic Adapt [1799/2000] * Avg. PSNR:25.23 bpp:0.2967 loss:0.60904
+2023-07-26 15:53:09,472 - Val step 1899: Loss: 0.609 PSNR: 25.23 bpp_sum: 0.2967 (0.2724 + 0.0243) |Gate:[0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1] |
+2023-07-26 15:53:09,473 - Dynamic Adapt [1899/2000] * Avg. PSNR:25.23 bpp:0.2967 loss:0.60855
+2023-07-26 15:53:17,939 - Val step 1999: Loss: 0.608 PSNR: 25.24 bpp_sum: 0.2967 (0.2724 + 0.0243) |Gate:[0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1] |
+2023-07-26 15:53:17,939 - Dynamic Adapt [1999/2000] * Avg. PSNR:25.24 bpp:0.2967 loss:0.60778
+2023-07-26 15:57:44,392 - Namespace(checkpoint=None, clip_max_norm=1.0, cuda=True, epochs=2000, image='./test.png', learning_rate=0.001, lmbda=0.0016, model='cheng2020-attn', model_prefix='./', num_workers=4, quality=1, seed=None)
+2023-07-26 15:57:46,661 - Baseline * Avg. PSNR:21.63 bpp:0.3229 loss:1.03842
+2023-07-26 15:57:55,364 - Latent Refine [99/2000] * Avg. PSNR:21.88 bpp:0.3784 loss:1.05337
+2023-07-26 15:58:02,784 - Latent Refine [199/2000] * Avg. PSNR:22.03 bpp:0.3596 loss:1.01135
+2023-07-26 15:58:10,207 - Latent Refine [299/2000] * Avg. PSNR:22.16 bpp:0.3418 loss:0.97426
+2023-07-26 15:58:17,646 - Latent Refine [399/2000] * Avg. PSNR:22.23 bpp:0.3316 loss:0.95393
+2023-07-26 15:58:25,065 - Latent Refine [499/2000] * Avg. PSNR:22.31 bpp:0.3223 loss:0.93281
+2023-07-26 15:58:32,484 - Latent Refine [599/2000] * Avg. PSNR:22.39 bpp:0.3173 loss:0.91724
+2023-07-26 15:58:39,901 - Latent Refine [699/2000] * Avg. PSNR:22.45 bpp:0.3121 loss:0.90359
+2023-07-26 15:58:47,327 - Latent Refine [799/2000] * Avg. PSNR:22.51 bpp:0.3082 loss:0.89182
+2023-07-26 15:58:54,741 - Latent Refine [899/2000] * Avg. PSNR:22.56 bpp:0.3042 loss:0.88125
+2023-07-26 15:59:02,161 - Latent Refine [999/2000] * Avg. PSNR:22.61 bpp:0.3004 loss:0.87115
+2023-07-26 15:59:09,574 - Latent Refine [1099/2000] * Avg. PSNR:22.65 bpp:0.2967 loss:0.86181
+2023-07-26 15:59:16,996 - Latent Refine [1199/2000] * Avg. PSNR:22.69 bpp:0.2945 loss:0.85512
+2023-07-26 15:59:24,410 - Latent Refine [1299/2000] * Avg. PSNR:22.72 bpp:0.2916 loss:0.84776
+2023-07-26 15:59:31,831 - Latent Refine [1399/2000] * Avg. PSNR:22.75 bpp:0.2889 loss:0.84075
+2023-07-26 15:59:39,249 - Latent Refine [1499/2000] * Avg. PSNR:22.78 bpp:0.2866 loss:0.83508
+2023-07-26 15:59:46,669 - Latent Refine [1599/2000] * Avg. PSNR:22.80 bpp:0.2846 loss:0.83067
+2023-07-26 15:59:54,098 - Latent Refine [1699/2000] * Avg. PSNR:22.81 bpp:0.2822 loss:0.82642
+2023-07-26 16:00:01,528 - Latent Refine [1799/2000] * Avg. PSNR:22.83 bpp:0.2798 loss:0.82234
+2023-07-26 16:00:08,979 - Latent Refine [1899/2000] * Avg. PSNR:22.84 bpp:0.2782 loss:0.81918
+2023-07-26 16:00:16,419 - Latent Refine [1999/2000] * Avg. PSNR:22.85 bpp:0.2769 loss:0.81657
+2023-07-26 16:00:23,815 - Val step 99: Loss: 0.675 PSNR: 24.66 bpp_sum: 0.3192 (0.2726 + 0.0466) |Gate:[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] |
+2023-07-26 16:00:23,815 - Dynamic Adapt [99/2000] * Avg. PSNR:24.66 bpp:0.3192 loss:0.67492
+2023-07-26 16:00:33,988 - Val step 199: Loss: 0.651 PSNR: 24.59 bpp_sum: 0.2899 (0.2726 + 0.0173) |Gate:[0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1] |
+2023-07-26 16:00:33,988 - Dynamic Adapt [199/2000] * Avg. PSNR:24.59 bpp:0.2899 loss:0.65147
+2023-07-26 16:00:41,937 - Val step 299: Loss: 0.642 PSNR: 24.71 bpp_sum: 0.2902 (0.2726 + 0.0176) |Gate:[0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1] |
+2023-07-26 16:00:41,937 - Dynamic Adapt [299/2000] * Avg. PSNR:24.71 bpp:0.2902 loss:0.64169
+2023-07-26 16:00:49,909 - Val step 399: Loss: 0.636 PSNR: 24.79 bpp_sum: 0.2904 (0.2726 + 0.0178) |Gate:[0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1] |
+2023-07-26 16:00:49,909 - Dynamic Adapt [399/2000] * Avg. PSNR:24.79 bpp:0.2904 loss:0.63569
+2023-07-26 16:00:57,879 - Val step 499: Loss: 0.631 PSNR: 24.85 bpp_sum: 0.2906 (0.2726 + 0.0180) |Gate:[0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1] |
+2023-07-26 16:00:57,879 - Dynamic Adapt [499/2000] * Avg. PSNR:24.85 bpp:0.2906 loss:0.63148
+2023-07-26 16:01:05,929 - Val step 599: Loss: 0.630 PSNR: 24.87 bpp_sum: 0.2908 (0.2726 + 0.0182) |Gate:[0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1] |
+2023-07-26 16:01:05,930 - Dynamic Adapt [599/2000] * Avg. PSNR:24.87 bpp:0.2908 loss:0.63011
+2023-07-26 16:01:13,938 - Val step 699: Loss: 0.626 PSNR: 24.92 bpp_sum: 0.2910 (0.2726 + 0.0184) |Gate:[0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1] |
+2023-07-26 16:01:13,938 - Dynamic Adapt [699/2000] * Avg. PSNR:24.92 bpp:0.2910 loss:0.62624
+2023-07-26 16:01:21,921 - Val step 799: Loss: 0.622 PSNR: 24.98 bpp_sum: 0.2912 (0.2726 + 0.0186) |Gate:[0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1] |
+2023-07-26 16:01:21,922 - Dynamic Adapt [799/2000] * Avg. PSNR:24.98 bpp:0.2912 loss:0.62169
+2023-07-26 16:01:29,879 - Val step 899: Loss: 0.622 PSNR: 24.98 bpp_sum: 0.2913 (0.2726 + 0.0188) |Gate:[0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1] |
+2023-07-26 16:01:29,880 - Dynamic Adapt [899/2000] * Avg. PSNR:24.98 bpp:0.2913 loss:0.62173
+2023-07-26 16:01:37,842 - Val step 999: Loss: 0.620 PSNR: 25.00 bpp_sum: 0.2915 (0.2726 + 0.0189) |Gate:[0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1] |
+2023-07-26 16:01:37,842 - Dynamic Adapt [999/2000] * Avg. PSNR:25.00 bpp:0.2915 loss:0.62041
+2023-07-26 16:01:45,802 - Val step 1099: Loss: 0.618 PSNR: 25.04 bpp_sum: 0.2916 (0.2726 + 0.0190) |Gate:[0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1] |
+2023-07-26 16:01:45,803 - Dynamic Adapt [1099/2000] * Avg. PSNR:25.04 bpp:0.2916 loss:0.61758
+2023-07-26 16:01:53,767 - Val step 1199: Loss: 0.616 PSNR: 25.06 bpp_sum: 0.2917 (0.2726 + 0.0191) |Gate:[0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1] |
+2023-07-26 16:01:53,767 - Dynamic Adapt [1199/2000] * Avg. PSNR:25.06 bpp:0.2917 loss:0.61647
+2023-07-26 16:02:01,725 - Val step 1299: Loss: 0.615 PSNR: 25.08 bpp_sum: 0.2918 (0.2726 + 0.0193) |Gate:[0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1] |
+2023-07-26 16:02:01,725 - Dynamic Adapt [1299/2000] * Avg. PSNR:25.08 bpp:0.2918 loss:0.61508
+2023-07-26 16:02:09,705 - Val step 1399: Loss: 0.614 PSNR: 25.09 bpp_sum: 0.2919 (0.2726 + 0.0193) |Gate:[0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1] |
+2023-07-26 16:02:09,706 - Dynamic Adapt [1399/2000] * Avg. PSNR:25.09 bpp:0.2919 loss:0.61431
+2023-07-26 16:02:17,657 - Val step 1499: Loss: 0.613 PSNR: 25.10 bpp_sum: 0.2920 (0.2726 + 0.0194) |Gate:[0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1] |
+2023-07-26 16:02:17,657 - Dynamic Adapt [1499/2000] * Avg. PSNR:25.10 bpp:0.2920 loss:0.61327
+2023-07-26 16:02:25,646 - Val step 1599: Loss: 0.615 PSNR: 25.08 bpp_sum: 0.2921 (0.2726 + 0.0195) |Gate:[0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1] |
+2023-07-26 16:02:25,646 - Dynamic Adapt [1599/2000] * Avg. PSNR:25.08 bpp:0.2921 loss:0.61498
+2023-07-26 16:02:33,609 - Val step 1699: Loss: 0.612 PSNR: 25.12 bpp_sum: 0.2921 (0.2726 + 0.0195) |Gate:[0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1] |
+2023-07-26 16:02:33,610 - Dynamic Adapt [1699/2000] * Avg. PSNR:25.12 bpp:0.2921 loss:0.61246
+2023-07-26 16:02:41,611 - Val step 1799: Loss: 0.614 PSNR: 25.10 bpp_sum: 0.2921 (0.2726 + 0.0195) |Gate:[0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1] |
+2023-07-26 16:02:41,611 - Dynamic Adapt [1799/2000] * Avg. PSNR:25.10 bpp:0.2921 loss:0.61378
+2023-07-26 16:02:49,591 - Val step 1899: Loss: 0.611 PSNR: 25.13 bpp_sum: 0.2921 (0.2726 + 0.0195) |Gate:[0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1] |
+2023-07-26 16:02:49,591 - Dynamic Adapt [1899/2000] * Avg. PSNR:25.13 bpp:0.2921 loss:0.61113
+2023-07-26 16:02:57,567 - Val step 1999: Loss: 0.612 PSNR: 25.12 bpp_sum: 0.2921 (0.2726 + 0.0195) |Gate:[0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1] |
+2023-07-26 16:02:57,568 - Dynamic Adapt [1999/2000] * Avg. PSNR:25.12 bpp:0.2921 loss:0.61249
