@@ -3,8 +3,8 @@
 Image Compression
 </center> <br> <center> </h1>
 
-<p align="center">
-<a href="https://arxiv.org/abs/xxxx.xxxxx" target="_blank">arXiv</a>
+<!-- <p align="center">
+<a href="https://arxiv.org/abs/xxxx.xxxxx" target="_blank">arXiv</a> -->
 
 </div>
 
@@ -25,20 +25,6 @@ Our proposal involves a low-rank adaptation approach aimed at addressing the rat
     <span><b>Figure 2. Simplified pipeline of our dynamic instance adaptive method.</b></span>
 </p>
 
-## Visualization
-
-
-
-<p align="center"> 
-    <img src="./fig/compare.png" width="100%">  <br>
-    <span><b>Figure 3. Visualization of reconstruction error with and without extra parameters using a pixel-style image as an example.</b></span>
-</p>
-
-<p align="center">
-    <img src="./fig/visual_compare.png" width="100%"> <br>
-    <span><b>Figure 4. Comparisons with other instance adaptive codecs on out-of-domain images.</b></span>
-</p>
-
 
 ## Requirements
 
@@ -50,7 +36,6 @@ pip install timm==0.6.7 dataclasses==0.8
 ## Dataset
 
 Our self-collected 100 pixel-style gaming images are available at [google drive](https://drive.google.com/drive/folders/1iwKGoVAuQ6Q0rRIAygWmIS0feLs3OTNn?usp=sharing).
-
 ## Quick Start
 
 ```
@@ -71,4 +56,20 @@ CUDA_VISIBLE_DEVICES=0 python3 eval.py \
         --image {path to input image}
 
 ```
+
+## Visualization
+
+
+
+<p align="center"> 
+    <img src="./fig/compare.png" width="100%">  <br>
+    <span><b>Figure 3. Visualization of reconstruction error with and without extra parameters using a pixel-style image as an example.</b></span>
+</p>
+
+<p align="center">
+    <img src="./fig/visual_compare.png" width="100%"> <br>
+    <span><b>Figure 4. Comparisons with other instance adaptive codecs on out-of-domain images.</b></span>
+</p>
+
+
 
