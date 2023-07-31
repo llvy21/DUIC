@@ -12,9 +12,9 @@ Image Compression
 The latest advancements in neural image compression show great potential in surpassing the rate-distortion performance of conventional standard codecs. Nevertheless, there exists an indelible domain gap between the datasets utilized for training (i.e., natural images) and those utilized for inference (e.g., artistic images).
 
 <p align="center">
-    <img src="./fig/background.jpg" width="70%">
+    <img src="./fig/background.jpg" width="60%">
     <br>
-    <span><b>Figure 1. : (upper left) Three state-of-the-art neural image codecs perform fairly well on the Kodak dataset. (upper right) But their performance drops significantly on an out-of-domain dataset containing artistic images. </b></span>
+    <span><b>Figure 1. (upper left) Three state-of-the-art neural image codecs perform fairly well on the Kodak dataset. (upper right) But their performance drops significantly on an out-of-domain dataset containing artistic images. </b></span>
 </p>
 
 ## Method
@@ -25,14 +25,18 @@ Our proposal involves a low-rank adaptation approach aimed at addressing the rat
     <span><b>Figure 2. Simplified pipeline of our dynamic instance adaptive method.</b></span>
 </p>
 
-<p align="center">
-    <img src="./fig/visual_compare.png" width="100%"> <br>
-    <span><b>Figure 3. Comparisons with other instance adaptive codecs on out-of-domain images.</b></span>
-</p>
+## Visualization
+
+
 
 <p align="center"> 
     <img src="./fig/compare.png" width="100%">  <br>
-    <span><b>Figure 4. Visualization of reconstruction error with and without extra parameters using a pixel-style image as an example..</b></span>
+    <span><b>Figure 3. Visualization of reconstruction error with and without extra parameters using a pixel-style image as an example.</b></span>
+</p>
+
+<p align="center">
+    <img src="./fig/visual_compare.png" width="100%"> <br>
+    <span><b>Figure 4. Comparisons with other instance adaptive codecs on out-of-domain images.</b></span>
 </p>
 
 
@@ -42,6 +46,10 @@ Our proposal involves a low-rank adaptation approach aimed at addressing the rat
 pip install compressai
 pip install timm==0.6.7 dataclasses==0.8
 ```
+
+## Dataset
+
+Our self-collected 100 pixel-style gaming images are available at [google drive](https://drive.google.com/drive/folders/1iwKGoVAuQ6Q0rRIAygWmIS0feLs3OTNn?usp=sharing).
 
 ## Quick Start
 
@@ -63,3 +71,4 @@ CUDA_VISIBLE_DEVICES=0 python3 eval.py \
         --image {path to input image}
 
 ```
+
