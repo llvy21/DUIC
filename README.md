@@ -1,7 +1,7 @@
 <div align="center">
-<h2> Dynamic Low-Rank Instance Adaptation for Universal Neural
+<h1> Dynamic Low-Rank Instance Adaptation for Universal Neural
 Image Compression
-</center> <br> <center> </h2>
+</center> <br> <center> </h1>
 
 <p align="center">
 <a href="https://arxiv.org/abs/xxxx.xxxxx" target="_blank">arXiv</a>
