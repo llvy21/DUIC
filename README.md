@@ -3,8 +3,8 @@
 Image Compression
 </center> <br> <center> </h1>
 
-<!-- <p align="center">
-<a href="https://arxiv.org/abs/xxxx.xxxxx" target="_blank">arXiv</a> -->
+<p align="center">
+<a href="https://arxiv.org/abs/2308.07733" target="_blank">arXiv</a> 
 
 </div>
 
@@ -71,5 +71,17 @@ CUDA_VISIBLE_DEVICES=0 python3 eval.py \
     <span><b>Figure 4. Comparisons with other instance adaptive codecs on out-of-domain images.</b></span>
 </p>
 
+## Citation
+
+If you find this project useful for your research, please kindly cite our paper:
+
+```
+@article{lv2023dynamic,
+  title={Dynamic Low-Rank Instance Adaptation for Universal Neural Image Compression},
+  author={Lv, Yue and Xiang, Jinxi and Zhang, Jun and Yang, Wenming and Han, Xiao and Yang, Wei},
+  journal={arXiv preprint arXiv:2308.07733},
+  year={2023}
+}
+```
 
 
