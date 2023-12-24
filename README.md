@@ -76,10 +76,11 @@ CUDA_VISIBLE_DEVICES=0 python3 eval.py \
 If you find this project useful for your research, please kindly cite our paper:
 
 ```
-@article{lv2023dynamic,
+@inproceedings{lv2023dynamic,
   title={Dynamic Low-Rank Instance Adaptation for Universal Neural Image Compression},
   author={Lv, Yue and Xiang, Jinxi and Zhang, Jun and Yang, Wenming and Han, Xiao and Yang, Wei},
-  journal={arXiv preprint arXiv:2308.07733},
+  booktitle={Proceedings of the 31st ACM International Conference on Multimedia},
+  pages={632--642},
   year={2023}
 }
 ```
