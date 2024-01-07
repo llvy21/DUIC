@@ -4,7 +4,7 @@ Image Compression
 </center> <br> <center> </h1>
 
 <p align="center">
-<a href="https://arxiv.org/abs/2308.07733" target="_blank">arXiv</a> 
+<a href="https://arxiv.org/abs/2308.07733" target="_blank">arXiv</a>  ｜ <a href="https://dl.acm.org/doi/10.1145/3581783.3612187" target="_blank">Paper</a> 
 
 </div>
 
